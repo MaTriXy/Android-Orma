@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class OrmaConditionBase<Model, C extends OrmaConditionBase<Model, ?>> {
+public abstract class OrmaConditionBase<Model, C extends OrmaConditionBase<Model, ?>> implements Cloneable {
 
     protected final OrmaConnection conn;
 
@@ -47,6 +47,9 @@ public abstract class OrmaConditionBase<Model, C extends OrmaConditionBase<Model
         this(condition.conn);
         where(condition);
     }
+
+    @Override
+    abstract public OrmaConditionBase<Model, C> clone();
 
     public OrmaConnection getConnection() {
         return conn;
@@ -171,6 +174,17 @@ public abstract class OrmaConditionBase<Model, C extends OrmaConditionBase<Model
         return (C) this;
     }
 
+    /**
+     * Builds a condition group `(...)` to specify the priority of conditions.
+     *
+     * @param block A condition block.
+     * @return the receiver itself
+     */
+    @SuppressWarnings("unchecked")
+    public C where(@NonNull Function1<C, C> block) {
+        return where(block.apply(emptyClone()));
+    }
+
     @SuppressWarnings("unchecked")
     public C where(@NonNull OrmaConditionBase<Model, ?> condition) {
         if (condition.whereClause != null && condition.bindArgs != null) {
@@ -192,5 +206,14 @@ public abstract class OrmaConditionBase<Model, C extends OrmaConditionBase<Model
         } else {
             return null;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private C emptyClone() {
+        C copied = (C) clone();
+        copied.whereConjunction = " AND ";
+        copied.whereClause = null;
+        copied.bindArgs = null;
+        return copied;
     }
 }

@@ -3,27 +3,28 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'io.realm:realm-gradle-plugin:2.3.0'
-        classpath 'me.tatarka:gradle-retrolambda:3.5.0'
-        classpath 'net.orfjackal.retrolambda:retrolambda:2.5.0'
+        classpath 'io.realm:realm-gradle-plugin:3.3.2'
+        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
     }
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'realm-android'
 apply plugin: 'me.tatarka.retrolambda'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.1'
     dataBinding.enabled = true
     defaultConfig {
         applicationId "com.github.gfx.android.orma.example"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode rootProject.ext.versionCode
         versionName rootProject.ext.versionName
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86"
+        }
     }
     signingConfigs {
         debug {
@@ -50,6 +51,10 @@ android {
         }
     }
     productFlavors {
+        normal {}
+        encrypted {
+            applicationIdSuffix ".encrypted"
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -74,8 +79,9 @@ android {
 }
 
 dependencies {
-    apt project(':processor')
+    annotationProcessor project(':processor')
     compile project(':library')
+    compile project(':encryption')
     compile "com.android.support:appcompat-v7:${SUPPORT_LIBRARY_VERSION}"
     compile "com.android.support:cardview-v7:${SUPPORT_LIBRARY_VERSION}"
     compile "com.android.support:recyclerview-v7:${SUPPORT_LIBRARY_VERSION}"

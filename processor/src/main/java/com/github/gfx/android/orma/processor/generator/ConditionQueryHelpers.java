@@ -133,6 +133,12 @@ public class ConditionQueryHelpers {
                 .build();
     }
 
+    ParameterSpec buildStringParameterSpec(String name) {
+        return ParameterSpec.builder(Types.String, name)
+                .addAnnotations(Collections.singletonList(Annotations.nonNull()))
+                .build();
+    }
+
     void buildConditionHelpersForEachColumn(List<MethodSpec> methodSpecs, ColumnDefinition column) {
         AssociationDefinition r = column.getAssociation();
 
@@ -182,9 +188,10 @@ public class ConditionQueryHelpers {
         }
 
         if (isAssociation) {
-            // for foreign keys
             if (column.hasHelper(Column.Helpers.CONDITION_EQ)) {
                 SchemaDefinition associatedSchema = column.getAssociatedSchema();
+
+                // for foreign keys
                 associatedSchema.getPrimaryKey().ifPresent(foreignKey -> {
                     String paramName = column.name + Strings.toUpperFirst(foreignKey.name);
                     CodeBlock serializedParamExpr = foreignKey.applySerialization("conn", paramName);
@@ -200,9 +207,31 @@ public class ConditionQueryHelpers {
                                     .build()
                     );
                 });
-            }
 
-            // generates only "*Eq" for associations
+                // for querying association model
+                if (r.isDirectAssociation()) {
+                    ClassName associationConditionClassName = associatedSchema.getAssociationConditionClassName();
+                    TypeName paramType = Types.getFunction1(associationConditionClassName, associationConditionClassName);
+                    String paramName = "block";
+                    methodSpecs.add(
+                            MethodSpec.methodBuilder(column.name)
+                                    .addModifiers(Modifier.PUBLIC)
+                                    .addParameter(
+                                            ParameterSpec.builder(paramType, paramName)
+                                                    .addAnnotation(Annotations.nonNull())
+                                                    .build()
+                                    )
+                                    .returns(targetClassName)
+                                    .addStatement(
+                                            "return $L.apply(new $T(getConnection(), $L.associationSchema)).appendTo(this)",
+                                            paramName,
+                                            associationConditionClassName,
+                                            columnExpr
+                                    )
+                                    .build()
+                    );
+                }
+            }
             return;
         }
 
@@ -311,6 +340,46 @@ public class ConditionQueryHelpers {
                     .returns(targetClassName)
                     .addStatement("return $L($T.asList(values))",
                             column.name + "NotIn", Types.Arrays)
+                    .build()
+            );
+        }
+
+        if (column.hasHelper(Column.Helpers.CONDITION_GLOB) && type.equals(Types.String) && !column.primaryKey) {
+            methodSpecs.add(MethodSpec.methodBuilder(column.name + "Glob")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(buildStringParameterSpec("pattern"))
+                    .returns(targetClassName)
+                    .addStatement("return where($L, $S, pattern)", columnExpr, "GLOB")
+                    .build()
+            );
+        }
+
+        if (column.hasHelper(Column.Helpers.CONDITION_NOT_GLOB) && type.equals(Types.String) && !column.primaryKey) {
+            methodSpecs.add(MethodSpec.methodBuilder(column.name + "NotGlob")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(buildStringParameterSpec("pattern"))
+                    .returns(targetClassName)
+                    .addStatement("return where($L, $S, pattern)", columnExpr, "NOT GLOB")
+                    .build()
+            );
+        }
+
+        if (column.hasHelper(Column.Helpers.CONDITION_LIKE) && type.equals(Types.String) && !column.primaryKey) {
+            methodSpecs.add(MethodSpec.methodBuilder(column.name + "Like")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(buildStringParameterSpec("pattern"))
+                    .returns(targetClassName)
+                    .addStatement("return where($L, $S, pattern)", columnExpr, "LIKE")
+                    .build()
+            );
+        }
+
+        if (column.hasHelper(Column.Helpers.CONDITION_NOT_LIKE) && type.equals(Types.String) && !column.primaryKey) {
+            methodSpecs.add(MethodSpec.methodBuilder(column.name + "NotLike")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(buildStringParameterSpec("pattern"))
+                    .returns(targetClassName)
+                    .addStatement("return where($L, $S, pattern)", columnExpr, "NOT LIKE")
                     .build()
             );
         }

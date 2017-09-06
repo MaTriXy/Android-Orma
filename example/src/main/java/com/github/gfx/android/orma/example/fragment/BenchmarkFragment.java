@@ -18,6 +18,12 @@ package com.github.gfx.android.orma.example.fragment;
 
 import com.github.gfx.android.orma.AccessThreadConstraint;
 import com.github.gfx.android.orma.Inserter;
+import com.github.gfx.android.orma.core.Database;
+import com.github.gfx.android.orma.core.DatabaseProvider;
+import com.github.gfx.android.orma.core.DatabaseStatement;
+import com.github.gfx.android.orma.core.DefaultDatabase;
+import com.github.gfx.android.orma.encryption.EncryptedDatabase;
+import com.github.gfx.android.orma.example.BuildConfig;
 import com.github.gfx.android.orma.example.databinding.FragmentBenchmarkBinding;
 import com.github.gfx.android.orma.example.databinding.ItemResultBinding;
 import com.github.gfx.android.orma.example.handwritten.HandWrittenOpenHelper;
@@ -29,8 +35,6 @@ import com.github.gfx.android.orma.example.realm.RealmTodo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -50,6 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -63,6 +68,8 @@ public class BenchmarkFragment extends Fragment {
     static final int N_ITEMS = 10;
 
     static final int N_OPS = 100;
+
+    static final String PASSWORD = "password";
 
     final String titlePrefix = "title ";
 
@@ -86,7 +93,7 @@ public class BenchmarkFragment extends Fragment {
         return new BenchmarkFragment();
     }
 
-    static long longForQuery(SQLiteDatabase db, String sql, String[] args) {
+    static long longForQuery(Database db, String sql, String[] args) {
         Cursor cursor = db.rawQuery(sql, args);
         cursor.moveToFirst();
         long value = cursor.getLong(0);
@@ -128,14 +135,26 @@ public class BenchmarkFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        RealmConfiguration realmConf = new RealmConfiguration.Builder().build();
-        Realm.setDefaultConfiguration(realmConf);
-        Realm.deleteRealm(realmConf);
+        {
+            RealmConfiguration.Builder builder = new RealmConfiguration.Builder();
+            if (encryptionIsRequired()) {
+                byte[] key = new byte[64];
+                byte[] passwordBytes = PASSWORD.getBytes();
+                System.arraycopy(passwordBytes, 0, key, 0, Math.min(64, passwordBytes.length));
+                builder = builder.encryptionKey(key);
+            }
+            RealmConfiguration realmConf = builder.build();
+            Realm.setDefaultConfiguration(realmConf);
+            Realm.deleteRealm(realmConf);
+        }
 
         Schedulers.io().createWorker().schedule(() -> {
             getContext().deleteDatabase("orma-benchmark.db");
-            orma = OrmaDatabase.builder(getContext())
-                    .name("orma-benchmark.db")
+            OrmaDatabase.Builder builder = OrmaDatabase.builder(getContext()).name("orma-benchmark.db");
+            if (encryptionIsRequired()) {
+                builder = builder.provider(new EncryptedDatabase.Provider(PASSWORD));
+            }
+            orma = builder
                     .readOnMainThread(AccessThreadConstraint.NONE)
                     .writeOnMainThread(AccessThreadConstraint.NONE)
                     .trace(false)
@@ -144,7 +163,13 @@ public class BenchmarkFragment extends Fragment {
         });
 
         getContext().deleteDatabase("hand-written.db");
-        hw = new HandWrittenOpenHelper(getContext(), "hand-written.db");
+        DatabaseProvider provider;
+        if (encryptionIsRequired()) {
+            provider = new EncryptedDatabase.Provider(PASSWORD);
+        } else {
+            provider = new DefaultDatabase.Provider();
+        }
+        hw = new HandWrittenOpenHelper(getContext(), "hand-written.db", provider);
     }
 
     @Override
@@ -163,7 +188,8 @@ public class BenchmarkFragment extends Fragment {
 
         hw.getWritableDatabase().execSQL("DELETE FROM todo");
 
-        orma.deleteFromTodo()
+        @SuppressLint("unused")
+        Disposable disposable = orma.deleteFromTodo()
                 .executeAsSingle()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -189,7 +215,9 @@ public class BenchmarkFragment extends Fragment {
                     return startSelectAllWithHandWritten();
                 })
                 .subscribe(
-                        result -> adapter.add(result),
+                        result -> {
+                            adapter.add(result);
+                        },
                         error -> {
                             Log.wtf(TAG, error);
                             Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
@@ -252,10 +280,10 @@ public class BenchmarkFragment extends Fragment {
     Single<Result> startInsertWithHandWritten() {
         return Single.fromCallable(() -> {
             long result = runWithBenchmark(() -> {
-                SQLiteDatabase db = hw.getWritableDatabase();
+                Database db = hw.getWritableDatabase();
                 db.beginTransaction();
 
-                SQLiteStatement inserter = db.compileStatement(
+                DatabaseStatement inserter = db.compileStatement(
                         "INSERT INTO todo (title, content, done, createdTime) VALUES (?, ?, ?, ?)");
 
                 long now = System.currentTimeMillis();
@@ -346,11 +374,11 @@ public class BenchmarkFragment extends Fragment {
             long result = runWithBenchmark(() -> {
                 AtomicInteger count = new AtomicInteger();
 
-                SQLiteDatabase db = hw.getReadableDatabase();
+                Database db = hw.getReadableDatabase();
                 Cursor cursor = db.query(
                         "todo",
                         new String[]{"id, title, content, done, createdTime"},
-                        null, null, null, null, "createdTime ASC" // whereClause, whereArgs, groupBy, having, orderBy
+                        null, null, null, null, "createdTime ASC", null // whereClause, whereArgs, groupBy, having, orderBy, limit
                 );
 
                 if (cursor.moveToFirst()) {
@@ -381,6 +409,10 @@ public class BenchmarkFragment extends Fragment {
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    boolean encryptionIsRequired() {
+        return BuildConfig.FLAVOR.equals("encrypted");
     }
 
     static class Result {

@@ -16,6 +16,8 @@
 
 package com.github.gfx.android.orma.example.fragment;
 
+import com.github.gfx.android.orma.encryption.EncryptedDatabase;
+import com.github.gfx.android.orma.example.BuildConfig;
 import com.github.gfx.android.orma.example.databinding.CardTodoBinding;
 import com.github.gfx.android.orma.example.databinding.FragmentListViewBinding;
 import com.github.gfx.android.orma.example.orma.OrmaDatabase;
@@ -40,6 +42,7 @@ import android.widget.TextView;
 import java.util.Date;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class ListViewFragment extends Fragment {
@@ -64,8 +67,12 @@ public class ListViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentListViewBinding.inflate(inflater, container, false);
 
-        orma = OrmaDatabase.builder(getContext())
-                .build();
+        // NOTE: the DB handle should be a singleton in production
+        OrmaDatabase.Builder builder = OrmaDatabase.builder(getContext());
+        if (BuildConfig.FLAVOR.equals("encrypted")) {
+            builder = builder.provider(new EncryptedDatabase.Provider("password"));
+        }
+        orma = builder.build();
 
         adapter = new Adapter(getContext(), orma.relationOfTodo().orderByCreatedTimeAsc());
         binding.list.setAdapter(adapter);
@@ -114,7 +121,8 @@ public class ListViewFragment extends Fragment {
                 Todo currentTodo = getRelation().reload(todo);
                 final boolean done = !currentTodo.done;
 
-                getRelation()
+                @SuppressWarnings("unused")
+                Disposable disposable = getRelation()
                         .updater()
                         .idEq(todo.id)
                         .done(done)

@@ -63,7 +63,7 @@ public class Types {
 
     public static final ClassName Cursor = ClassName.get("android.database", "Cursor");
 
-    public static final ClassName SQLiteStatement = ClassName.get("android.database.sqlite", "SQLiteStatement");
+    public static final ClassName DatabaseStatement = ClassName.get("com.github.gfx.android.orma.core", "DatabaseStatement");
 
     public static final ClassName SQLiteConstraintException = ClassName
             .get("android.database.sqlite", "SQLiteConstraintException");
@@ -105,6 +105,8 @@ public class Types {
     public static final ClassName Updater = ClassName.get(ormaPackageName, "Updater");
 
     public static final ClassName Deleter = ClassName.get(ormaPackageName, "Deleter");
+
+    public static final ClassName AssociationCondition = ClassName.get(ormaPackageName, "AssociationCondition");
 
     public static final ClassName OrmaConnection = ClassName.get(ormaPackageName, "OrmaConnection");
 
@@ -200,6 +202,10 @@ public class Types {
 
     public static ParameterizedTypeName getDeleter(TypeName modelType, TypeName concleteDeleterType) {
         return ParameterizedTypeName.get(Deleter, modelType, concleteDeleterType);
+    }
+
+    public static ParameterizedTypeName getAssociationCondition(TypeName modelType, TypeName concreteSelectorType) {
+        return ParameterizedTypeName.get(AssociationCondition, modelType, concreteSelectorType);
     }
 
     public static ParameterizedTypeName getSet(ClassName typeName) {

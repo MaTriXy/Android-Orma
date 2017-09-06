@@ -21,6 +21,7 @@ import com.github.gfx.android.orma.annotation.StaticTypeAdapters;
 import com.github.gfx.android.orma.annotation.Table;
 import com.github.gfx.android.orma.annotation.VirtualTable;
 import com.github.gfx.android.orma.processor.exception.ProcessingException;
+import com.github.gfx.android.orma.processor.generator.AssociationConditionWriter;
 import com.github.gfx.android.orma.processor.generator.BaseWriter;
 import com.github.gfx.android.orma.processor.generator.DatabaseWriter;
 import com.github.gfx.android.orma.processor.generator.DeleterWriter;
@@ -35,7 +36,6 @@ import com.github.gfx.android.orma.processor.tool.AnnotationHandle;
 import com.github.gfx.android.orma.processor.tool.SynchronizedFiler;
 import com.squareup.javapoet.JavaFile;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -78,7 +78,7 @@ public class OrmaProcessor extends AbstractProcessor {
                     .forEach(schema -> context.schemaMap.put(schema.getModelClassName(), schema));
 
             buildVirtualTableSchemas(context, roundEnv)
-                    .peek(schema -> {
+                    .forEach(schema -> {
                         throw new ProcessingException("@VirtualTable is not yet implemented.", schema.getElement());
                     });
 
@@ -93,7 +93,8 @@ public class OrmaProcessor extends AbstractProcessor {
                             new RelationWriter(context, schema),
                             new SelectorWriter(context, schema),
                             new UpdaterWriter(context, schema),
-                            new DeleterWriter(context, schema)))
+                            new DeleterWriter(context, schema),
+                            new AssociationConditionWriter(context, schema)))
                     .parallel()
                     .forEach(this::writeCodeForEachModel);
 

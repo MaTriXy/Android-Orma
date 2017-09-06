@@ -1,13 +1,13 @@
-# Android Orma [![Circle CI](https://circleci.com/gh/gfx/Android-Orma/tree/master.svg?style=svg)](https://circleci.com/gh/gfx/Android-Orma/tree/master) [ ![Download](https://api.bintray.com/packages/gfx/maven/orma/images/download.svg) ](https://bintray.com/gfx/maven/orma/)
+# Android Orma [![Circle CI](https://circleci.com/gh/gfx/Android-Orma/tree/master.svg?style=svg)](https://circleci.com/gh/gfx/Android-Orma/tree/master) [ ![Download](https://api.bintray.com/packages/gfx/maven/orma/images/download.svg) ](https://bintray.com/gfx/maven/orma/) [![Gitter](http://badges.gitter.im/Android-Orma.svg)](https://gitter.im/Android-Orma/Lobby)
 
 <p align="center">
 <img src="Orma.png" width="256" height="256"  alt="Android Orma" />
 </p>
 
-Orma is an ORM (Object-Relation Mapper) for [Android SQLiteDatabase](http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html),
-generating helper classes at compile time with **annotation processing**, inspired in ActiveAndroid, GreenDAO, and Realm.
+Orma is a ORM (Object-Relation Mapper) for [Android SQLiteDatabase](http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html).
+Because it generates helper classes at compile time with **annotation processing**, its query builders are type-safe.
 
-The interface of Orma is very simple and easy to use,
+The interface of Orma is simple and easy to use,
 as the author respects the Larry Wall's wisdom:
 
 > Easy things should be easy, and hard things should be possible
@@ -37,10 +37,12 @@ as the author respects the Larry Wall's wisdom:
 - [Details of Database Handles](#details-of-database-handles)
     - [Configuration of Database Handles](#configuration-of-database-handles)
     - [Database Handle Builders](#database-handle-builders)
+    - [In-Memory Database](#in-memory-database)
 - [Details of Models](#details-of-models)
     - [Setters and Getters](#setters-and-getters)
     - [Immutable Models](#immutable-models)
     - [Composite Indexes](#composite-indexes)
+    - [Reserved Names](#reserved-names)
 - [RxJava Integration](#rxjava-integration)
 - [Associations](#associations)
     - [Has-One Associations with `SingleAssociation<T>`](#has-one-associations-with-singleassociationt)
@@ -53,10 +55,14 @@ as the author respects the Larry Wall's wisdom:
     - [`@StaticTypeAdapters` for Multiple Serializers at Once](#statictypeadapters-for-multiple-serializers-at-once)
     - [Built-In Type Adapters](#built-in-type-adapters)
     - [Generic Type Adapters](#generic-type-adapters)
+- [Pagination](#pagination)
+    - [limit and offset](#limit-and-offset)
+    - [page and per](#page-and-per)
 - [Raw Queries](#raw-queries)
 - [Migration](#migration)
 - [DataSet Changed Events](#dataset-changed-events)
 - [Cooperation with Serialization Libraries](#cooperation-with-serialization-libraries)
+- [Encryption](#encryption)
 - [Example](#example)
 - [Benchmark](#benchmark)
 - [Method Count](#method-count)
@@ -80,9 +86,10 @@ as the author respects the Larry Wall's wisdom:
 
 ## Motivation
 
-There are already [a lot of ORMs](https://android-arsenal.com/tag/69). Why I have to add another wheel?
+There are already [a lot of ORMs for Android](https://github.com/search?q=topic%3Aandroid+topic%3Aorm).
+Why I have to add another wheel?
 
-The answer is that I need ORM that have *all* the following features:
+The answer is that I need an ORM that has *all* the following features:
 
 * Fast as hand-written code
 * POJO models
@@ -90,18 +97,19 @@ The answer is that I need ORM that have *all* the following features:
   * Might implement `Parcelable` and/or extend any classes
   * They should be passed to another thread
 * A database handle must be an object instance
-  * Not a singleton class
   * Not a static-method based class
+  * Even though it is designed to be used as a singleton scope
 * Easy migration
-  * Some `ALTER TABLE`, e.g. `add column` and `drop column`, should be detectd and processed
+  * Some `ALTER TABLE`, e.g. `add column` and `drop column`, should be detected and processed
   * There is a wheel in Perl: [SQL::Translator::Diff](https://metacpan.org/pod/SQL::Translator::Diff)
-* Code completion friendly
+* Type safe and code completion friendly
   * `db.selectFromModel()` is better than `new Select(Model.class)`
+  * `todos.idEq(id).toList()` is better than `todos.equalTo("id", id)`
 * Custom raw queries are sometimes inevitable
   * `GROUP BY ... HAVING ...`
   * `SELECT max(value), min(value), avg(value), count(value) FROM ...`
 
-And now they are what Orma has.
+And now they are exactly what Orma has.
 
 ## Requirements
 
@@ -114,8 +122,8 @@ Declare dependencies to use Orma and its annotation processor.
 
 ```gradle:build.gradle
 dependencies {
-    annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.1.1'
-    compile 'com.github.gfx.android.orma:orma:4.1.1'
+    annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.2.5'
+    compile 'com.github.gfx.android.orma:orma:4.2.5'
 }
 ```
 
@@ -137,7 +145,7 @@ import android.support.annotation.Nullable;
 @Table
 public class Todo {
 
-    @PrimaryKey
+    @PrimaryKey(autoincrement = true)
     public long id;
 
     @Column(indexed = true)
@@ -159,6 +167,7 @@ Here is an example to configure `OrmaDatabase`:
 ```java
 // See OrmaDatabaseBuilderBase for other options.
 OrmaDatabase orma = OrmaDatabase.builder(context)
+    .name("main.db") // default: "${applicationId}.orma.db"
     .build();
 ```
 
@@ -221,7 +230,7 @@ This is an internal helper class and not intended to be employed by users.
 
 ### Relation Helpers
 
-A Relation helper, e.g. `Todo_Relation`, is an entry point of table operations, which has conditions and orderings.
+A Relation helper, e.g. `Todo_Relation`, is an entry point of table operations.
 
 This is created by a database handle:
 
@@ -231,7 +240,7 @@ public static Todo_Relation relation() {
 }
 ```
 
-And is able to create `Selector`, `Updater`, `Deleter`, and `Inserter` for the model.
+And is able to create `Selector`, `Updater`, `Deleter`, and `Inserter` for the target model.
 
 ```java
 Todo_Relation todos = orma.relationOfTodo();
@@ -270,6 +279,19 @@ for (Todo todo : todos) {
   // ...
 }
 ```
+
+And has convenience `#upsert()` to "save it anyway", returning a new model:
+
+```java
+Todo_Relation todos = orma.relationOfTodo()
+
+Todo newTodo = todos.upsert(todo); // INSERT if it's not persistent; UPDATE Otherwise
+```
+
+Unlike `INSERT` with `OnConflict.REPLACE`, `#upsert()` doesn't break associations.
+
+NOTE: if you use a model after `#upsert()`, you must use the returned `newModel`.
+This is because Orma does not change the model's primary key on `INSERT`.
 
 ### Selector Helpers
 
@@ -341,6 +363,15 @@ The following are generated for numeric columns
 | `*Gt(value)`     | `* > value`         |
 | `*Ge(value)`     | `* >= value`        |
 | `*Between(a, b)` | `* BETWEEN a AND b` |
+
+The following are generated for `TEXT` and not `PRIMARY KEY` columns.
+
+| Method              | SQL                  |
+|:-------------------:|:--------------------:|
+| `*Glob(pattern)`    | `* GLOB pattern`     |
+| `*NotGlob(pattern)` | `* NOT GLOB pattern` |
+| `*Like(pattern)`    | `* LIKE pattern`     |
+| `*NotLike(pattern)` | `* NOT LIKE pattern` |
 
 And `ORDER BY` helpers:
 
@@ -454,6 +485,12 @@ OrmaDatabase orma = OrmaDatabase.builder(context)
     .writeOnMainThread(AccessThreadConstraint.NONE)
     .build();
 ```
+
+### In-Memory Database
+
+You can create in-memory databases by passing `null` to `OrmaDatabase.Builder#name()`.
+
+This is useful for testhing.
 
 ## Details of Models
 
@@ -601,6 +638,12 @@ Composite indexes generate query helper methods only for `==` and `ORDER BY` for
 You can control generated helpers with the `helpers` parameter.
 
 See also [Query Helper Methods](#query-helper-methods).
+
+### Reserved Names
+
+Column names starting `$` are reserved for metadata.
+
+Other names, including SQLite keywords, are allowed.
 
 ## RxJava Integration
 
@@ -943,6 +986,32 @@ public class EnumTypeAdapter {
 
 Now `deserialize()` uses the type information for the conclete target class.
 
+## Pagination
+
+There are two style pagination. You can use either, but not mixed.
+
+### limit and offset
+
+SQL style pagination:
+
+```java
+for (Todo todo : orma.selectFromTodo().titleEq("buy").offset(0).limit(10)) {
+    // ...
+}
+```
+
+### page and per
+
+"paging" style pagination inspired from Ruby's [kaminari](https://github.com/kaminari/kaminari).
+
+```java
+for (Todo todo : orma.selectFromTodo().titleEq("buy").page(1).per(10)) {
+    // ...
+}
+```
+
+Note that `page` starts from 1.
+
 ## Raw Queries
 
 For low-level operations, e.g. executing a raw query, you can use
@@ -996,7 +1065,7 @@ See [migration/README.md](migration/README.md) for details.
 
 ## DataSet Changed Events
 
-NOTE: **This is experimental in v4.1.1: its existence, signature or behavior might change without warning from one release to the next.**
+NOTE: **This is experimental in v4.2.5: its existence, signature or behavior might change without warning from one release to the next.**
 
 `Relation#createQueryObservable()` can create a event stream to observe data-set changed events for the relation.
 
@@ -1042,6 +1111,30 @@ trigger `#notifyDataSetChanged()`.
 Beause Orma reuqires nothing to do to models, serializers, e.g. Android Parcels or GSON, can
 serialize Orma models.
 
+## Encryption
+
+There's an encryption extension as `orma-encryption` since Orma v5.0.0-rc1:
+
+```build.gradle
+dependencies {
+    compile 'com.github.gfx.android.orma:orma-encryption:5.0.0-rc1'
+}
+```
+
+That provies `EncryptedDatabase`:
+
+```java
+String password = "...";
+OrmaDatabase orma = OrmaDatabase.builder(context)
+    .provider(new EncryptedDatabase.Provider(password))
+    // ...
+    .build();
+```
+
+Encrypted database are managed by [SQLCipher](https://github.com/sqlcipher/android-database-sqlcipher), so the database files are not compatible with non-encrypted ones.
+
+Note that with this extension the database handle throws `net.sqlcipher.database.SQLException` instead of `android.database.SQLException` as runtime exceptions, so it might not be 100% compatible with the default database.
+
 ## Example
 
 There is [an example app](example/) to demonstrate:
@@ -1057,7 +1150,7 @@ There is a simple benchmark with [Realm](https://github.com/realm/realm-java) an
 [example/BenchmarkFragment](example/src/main/java/com/github/gfx/android/orma/example/fragment/BenchmarkFragment.java)
 
 Here is a result performed on Android 6.0.0 / Xperia Z4
-as of Orma v4.1.1 and Realm 2.3.0, processing 10 items x 100 times:
+as of Orma v4.2.5 and Realm 2.3.0, processing 10 items x 100 times:
 
 <img src="benchmark.png" alt="" width="420"/>
 
@@ -1065,7 +1158,7 @@ I welcome benchmark in another condition and/or another code.
 
 ## Method Count
 
-Orma runtime is very lightweight: [Method Count for v4.1.1](http://www.methodscount.com/?lib=com.github.gfx.android.orma:orma:4.1.1)
+Orma runtime is very lightweight: [Method Count for v4.2.5](http://www.methodscount.com/?lib=com.github.gfx.android.orma:orma:4.2.5)
 
 ## FAQ
 
@@ -1119,8 +1212,8 @@ Yes. As of Android Gradle Plugin 2.2.2, Orma should work with Jack.
 
 ```gradle:build.gradle
 dependencies {
-    annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.1.1'
-    compile 'com.github.gfx.android.orma:orma:4.1.1'
+    annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.2.5'
+    compile 'com.github.gfx.android.orma:orma:4.2.5'
 }
 ```
 
@@ -1139,7 +1232,7 @@ and forget `close`.
 Here is a list of open-source Androdi apps using Orma which are released to Google Play:
 
 * [gfx/Android-Helium](https://github.com/gfx/Android-Helium)
-* [konifar/droidkaigi2016](https://github.com/konifar/droidkaigi2016)
+* [DroidKaigi/conference-app-2017](https://github.com/DroidKaigi/conference-app-2017)
 
 Or you can search use cases by [GitHub search](https://github.com/search?o=desc&q=%22com.github.gfx.android.orma%22+filename%3Abuild.gradle&ref=searchresults&s=indexed&type=Code&utf8=%E2%9C%93).
 
@@ -1154,6 +1247,9 @@ Tell me if your projects use Orma!
 
 * Use [GitHub issues](https://github.com/gfx/Android-Orma/issues) for the issue tracker
 * Feel free to ask for questions to the author [@\_\_gfx\_\_](https://twitter.com/__gfx__)
+* Gitter Rooms:
+    * https://gitter.im/Android-Orma/Lobby (en)
+    * https://gitter.im/Android-Orma/Ja (ja)
 
 ## Licenses in Runtime Dependencies
 

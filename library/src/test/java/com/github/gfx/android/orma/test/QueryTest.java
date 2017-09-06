@@ -21,6 +21,7 @@ import com.github.gfx.android.orma.SingleAssociation;
 import com.github.gfx.android.orma.annotation.OnConflict;
 import com.github.gfx.android.orma.exception.InvalidStatementException;
 import com.github.gfx.android.orma.exception.NoValueException;
+import com.github.gfx.android.orma.function.Function1;
 import com.github.gfx.android.orma.test.model.Author;
 import com.github.gfx.android.orma.test.model.Author_Selector;
 import com.github.gfx.android.orma.test.model.Book;
@@ -78,6 +79,7 @@ public class QueryTest {
                 book.title = "today";
                 book.content = "milk, banana";
                 book.inPrint = true;
+                book.price = 200;
                 book.publisher = SingleAssociation.just(publisher);
                 return book;
             }
@@ -162,6 +164,14 @@ public class QueryTest {
         assertThat(book, is(nullValue()));
     }
 
+    @Test
+    public void valueWithOffset() throws Exception {
+        Book book = db.selectFromBook().offset(1).value();
+
+        assertThat(book.title, is("friday"));
+        assertThat(book.content, is("apple"));
+    }
+
     @Test(expected = NoValueException.class)
     public void valueIfNull() throws Exception {
         db.deleteFromBook().execute();
@@ -189,6 +199,14 @@ public class QueryTest {
         assert book != null;
         assertThat(book.bookId, is(db.selectFromBook().get(0).bookId));
         assertThat(db.selectFromBook().get(10), is(nullValue()));
+    }
+
+    @Test
+    public void testGetWithOffset() throws Exception {
+        Book book = db.selectFromBook().offset(1).get(0);
+
+        assertThat(book.title, is("friday"));
+        assertThat(book.content, is("apple"));
     }
 
     @Test
@@ -295,6 +313,68 @@ public class QueryTest {
                 .titleEq("today")
                 .and()
                 .titleEq("friday")
+                .toList();
+        assertThat(books, hasSize(0));
+    }
+
+    @Test
+    public void glob() throws Exception {
+        List<Book> books = db.selectFromBook()
+                .titleGlob("*ri*")
+                .toList();
+        assertThat(books, hasSize(1));
+    }
+
+    @Test
+    public void notGlob() throws Exception {
+        List<Book> books = db.selectFromBook()
+                .titleNotGlob("*day")
+                .toList();
+        assertThat(books, hasSize(0));
+    }
+
+    @Test
+    public void like() throws Exception {
+        List<Book> books = db.selectFromBook()
+                .titleLike("%ri%")
+                .toList();
+        assertThat(books, hasSize(1));
+    }
+
+    @Test
+    public void notLike() throws Exception {
+        List<Book> books = db.selectFromBook()
+                .titleNotLike("%day")
+                .toList();
+        assertThat(books, hasSize(0));
+    }
+
+    @Test
+    public void whereConditionGroupFunction() throws Exception {
+        List<Book> books = db.selectFromBook()
+                .where(new Function1<Book_Selector, Book_Selector>() {
+                    @Override
+                    public Book_Selector apply(Book_Selector it) {
+                        return it.titleEq("today").or().titleEq("friday");
+                    }
+                })
+                .and()
+                .priceGe(100)
+                .toList();
+        assertThat(books, hasSize(2));
+    }
+
+    @Test
+    public void whereComplexConditionGroup() throws Exception {
+        List<Book> books = db.selectFromBook()
+                .titleEq("friday")
+                .and()
+                .where(new Function1<Book_Selector, Book_Selector>() {
+                    @Override
+                    public Book_Selector apply(Book_Selector it) {
+                        return it.titleEq("today").or().priceGe(150);
+                    }
+                })
                 .toList();
         assertThat(books, hasSize(0));
     }

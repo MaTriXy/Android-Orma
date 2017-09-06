@@ -15,7 +15,8 @@
  */
 package com.github.gfx.android.orma.migration;
 
-import android.database.sqlite.SQLiteDatabase;
+import com.github.gfx.android.orma.core.Database;
+
 import android.support.annotation.NonNull;
 
 import java.util.List;
@@ -34,5 +35,5 @@ public interface MigrationEngine {
      * @param db      a writable database
      * @param schemas target table definitions
      */
-    void start(@NonNull SQLiteDatabase db, @NonNull List<? extends MigrationSchema> schemas);
+    void start(@NonNull Database db, @NonNull List<? extends MigrationSchema> schemas);
 }

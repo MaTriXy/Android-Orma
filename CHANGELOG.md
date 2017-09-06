@@ -10,11 +10,86 @@ The versioning follows [Semantic Versioning](http://semver.org/):
 
 Note that _experimental_ features, annotated with `@Experimental` may change without notice.
 
+## v5.0.0 (not yet scheduled)
+
+https://github.com/gfx/Android-Orma/compare/v4.2.5...HEAD
+
+## v5.0.0-rc4 2017/06/14
+
+https://github.com/gfx/Android-Orma/compare/v5.0.0-rc2...v5.0.0-rc3
+
+* [#421](https://github.com/gfx/Android-Orma/pull/421): fix multi-thread issues in DataSetChangedTrigger
+* [#415](https://github.com/gfx/Android-Orma/pull/415): fix where-block issues (@k-kagurazaka)
+
+## v5.0.0-rc3 2017/05/23
+
+https://github.com/gfx/Android-Orma/compare/v5.0.0-rc2...v5.0.0-rc3
+
+* [#405](https://github.com/gfx/Android-Orma/pull/405): `Selector#value()` and `Selector#getOrNull()` now respect `offset` (@k-kagurazaka)
+* [#407](https://github.com/gfx/Android-Orma/pull/407): Add condition helpers for `GLOB` and `LIKE` and their negative variants (@k-kagurazaka)
+* [#408](https://github.com/gfx/Android-Orma/pull/408): Add `Selector#where(Function<Selector, Selector>)` to build grouped conditions (@k-kagurazaka)
+* [#411](https://github.com/gfx/Android-Orma/pull/411): Add `OrmaConnection#close()` to close the connection; keep in mind that it is not needed for typical use-cases (@k-kagurazaka)
+* [#413](https://github.com/gfx/Android-Orma/pull/413): Fix crashes with SQLCipher's `DatabaseObjectNotClosedException` in `OrmaDatabase#prepareInsertInto*()`
+
+## v5.0.0-rc2 2017/05/17
+
+https://github.com/gfx/Android-Orma/compare/v5.0.0-rc1...v5.0.0-rc2
+
+* Merge v4.2.5 into master
+
+## v5.0.0-rc1 2017/05/15
+
+https://github.com/gfx/Android-Orma/compare/v4.2.4...v5.0.0-rc1
+
+* [#402](https://github.com/gfx/Android-Orma/pull/402) by @k-kagurazaka: Encryption support with SQLCipher, introducing new modules, `orma-encryption` and `orma-core`
+
+## v4.2.5 2017/05/17
+
+https://github.com/gfx/Android-Orma/compare/v4.2.4...v4.2.5
+
+* Downgrade ANTLR4 from 4.7 to 4.6; ANTLR4 4.7 crashes Android before 4.4 (issued in [#404](https://github.com/gfx/Android-Orma/issues/404))
+
+## v4.2.4 2017/04/28
+
+https://github.com/gfx/Android-Orma/compare/v4.2.3...v4.2.4
+
+* [#400](https://github.com/gfx/Android-Orma/pull/400): Upgrade ANTRL4 runtime to 4.7, requiring `diable "InvalidPackage"` in Android Lint
+
+## v4.2.3 2017/03/17
+
+https://github.com/gfx/Android-Orma/compare/v4.2.2...v4.2.3
+
+* [#392](https://github.com/gfx/Android-Orma/pull/392): Amend #393 to avoid lint errors
+* [#393](https://github.com/gfx/Android-Orma/pull/393): refactoring SingleAssociation
+
+## v4.2.2 2017/03/17
+
+https://github.com/gfx/Android-Orma/compare/v4.2.1...v4.2.2
+
+* [#391](https://github.com/gfx/Android-Orma/pull/391): Fix lint errors with Android Gradle plugin v2.3.0
+
+## v4.2.1 2017/03/05
+
+https://github.com/gfx/Android-Orma/compare/v4.2.0...v4.2.1
+
+* [#389](https://github.com/gfx/Android-Orma/pull/389): Built with Android Gradle plugin v2.3.0 and fixed usage of `@RestrictTo`
+
+## v4.2.0 2017/02/12
+
+https://github.com/gfx/Android-Orma/compare/v4.1.1...v4.2.0
+
+
+* Confenience `Relation#upsert()` is now available!
+
+## v4.2.0-rc2 2017/02/12
+
+* [#382](https://github.com/gfx/Android-Orma/pull/382): Fix NPE in `Relation#upsert(Model)`
+
 ## v4.2.0-rc1 2017/02/07
 
-* [#379](https://github.com/gfx/Android-Orma/pull/379)
-  * Deprecate `Relation#upserter()`. Use `inserter(OnConflict.REPLACE)` or `#upsert(Model)` instead.
-  * `Relation#upsert(Model)` to "UPDATE or INSERT", working recursively on associations
+* [#379](https://github.com/gfx/Android-Orma/pull/379): `Relation#upsert(Model)` to "UPDATE or INSERT", working recursively on associations
+
+  * And thus deprecate `Relation#upserter()` because it's confusing. Use `inserter(OnConflict.REPLACE)` or `#upsert(Model)` instead.
 * [#377](https://github.com/gfx/Android-Orma/pull/377): `Schema#getPrimaryKey` holds the boxed type of the primary key, instead of wildcard type
 
 ## v4.1.1 2017/01/25
