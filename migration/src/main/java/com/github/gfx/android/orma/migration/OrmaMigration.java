@@ -15,15 +15,17 @@
  */
 package com.github.gfx.android.orma.migration;
 
-import android.content.Context;
 import com.github.gfx.android.orma.core.Database;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
+
+import android.content.Context;
 import android.util.SparseArray;
 
 import java.util.List;
+
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 /**
  * <p>
@@ -43,8 +45,10 @@ public class OrmaMigration extends AbstractMigrationEngine {
 
     public static final String TAG = "OrmaMigration";
 
+    @NonNull
     final ManualStepMigration manualStepMigration;
 
+    @NonNull
     final SchemaDiffMigration schemaDiffMigration;
 
     /**
@@ -55,9 +59,9 @@ public class OrmaMigration extends AbstractMigrationEngine {
      * @param traceListener       Called to handle migration logs
      */
     protected OrmaMigration(
-            ManualStepMigration manualStepMigration,
-            SchemaDiffMigration schemaDiffMigration,
-            TraceListener traceListener) {
+            @NonNull ManualStepMigration manualStepMigration,
+            @NonNull SchemaDiffMigration schemaDiffMigration,
+            @NonNull TraceListener traceListener) {
         super(traceListener);
         this.manualStepMigration = manualStepMigration;
         this.schemaDiffMigration = schemaDiffMigration;
@@ -77,10 +81,12 @@ public class OrmaMigration extends AbstractMigrationEngine {
         return TAG;
     }
 
+    @NonNull
     public ManualStepMigration getManualStepMigration() {
         return manualStepMigration;
     }
 
+    @NonNull
     public SchemaDiffMigration getSchemaDiffMigration() {
         return schemaDiffMigration;
     }
@@ -111,6 +117,7 @@ public class OrmaMigration extends AbstractMigrationEngine {
 
     public static class Builder {
 
+        @NonNull
         final Context context;
 
         final boolean debug;
@@ -120,33 +127,36 @@ public class OrmaMigration extends AbstractMigrationEngine {
         @Nullable
         String schemaHashForSchemaDiffMigration = null;
 
+        @NonNull
         TraceListener traceListener;
 
         SparseArray<ManualStepMigration.Step> steps = new SparseArray<>();
 
-        Builder(Context context) {
+        Builder(@NonNull Context context) {
             this.context = context;
             debug = extractDebuggable(context);
             trace(debug);
         }
 
+        @NonNull
         public Builder versionForManualStepMigration(@IntRange(from = 1) int version) {
             versionForManualStepMigration = version;
             return this;
         }
 
+        @NonNull
         public Builder schemaHashForSchemaDiffMigration(@NonNull String schemaHash) {
             schemaHashForSchemaDiffMigration = schemaHash;
             return this;
         }
 
         public Builder trace(boolean value) {
-            traceListener = value ? TraceListener.LOGCAT : TraceListener.EMPTY;
+            trace(value ? TraceListener.LOGCAT : TraceListener.EMPTY);
             return this;
         }
 
-        public Builder trace(@NonNull TraceListener traceListener) {
-            this.traceListener = traceListener;
+        public Builder trace(@Nullable TraceListener traceListener) {
+            this.traceListener = traceListener != null ? traceListener : TraceListener.EMPTY;
             return this;
         }
 
@@ -155,6 +165,7 @@ public class OrmaMigration extends AbstractMigrationEngine {
             return this;
         }
 
+        @NonNull
         public OrmaMigration build() {
             if (versionForManualStepMigration == 0) {
                 versionForManualStepMigration = extractVersionCode(context);

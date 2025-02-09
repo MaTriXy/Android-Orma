@@ -1,5 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'com.novoda.bintray-release'
 
 targetCompatibility = JavaVersion.VERSION_1_8
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -11,22 +10,14 @@ task copyTestResources(type: Copy) {
 processTestResources.dependsOn copyTestResources
 
 dependencies {
-    compile project(':annotations')
-    compileOnly "com.android.support:support-annotations:${SUPPORT_LIBRARY_VERSION}"
-    compile 'com.squareup:javapoet:1.9.0'
-    testCompile project.rootProject.ext.ANDROID_JAR
-    testCompile 'junit:junit:4.12'
-    testCompile 'com.google.testing.compile:compile-testing:0.10'
+    implementation project(':annotations')
+    compileOnly "androidx.annotation:annotation:${ANDROIDX_ANNOTATION_VERSION}"
+    implementation 'com.squareup:javapoet:1.11.1'
+    testImplementation project.rootProject.ext.ANDROID_JAR
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'com.google.testing.compile:compile-testing:0.10'
 }
 
-publish {
-    artifactId = 'orma-processor'
-    desc = 'An annotation processor for Ormat to generate schema representations'
-
-    def metadata = project.rootProject.ext.metadata
-    groupId = metadata.groupId
-    publishVersion = metadata.version
-    website = metadata.website
-    repository = metadata.repository
-    licences = metadata.licences
-}
+archivesBaseName = 'orma-processor'
+metadata.desc = 'An annotation processor for Ormat to generate schema representations'
+apply from: "${project.rootDir}/publish.gradle"

@@ -16,9 +16,9 @@
 
 package com.github.gfx.android.orma.test;
 
-import com.github.gfx.android.orma.Inserter;
 import com.github.gfx.android.orma.ModelFactory;
 import com.github.gfx.android.orma.SingleAssociation;
+import com.github.gfx.android.orma.rx.RxInserter;
 import com.github.gfx.android.orma.test.model.Book;
 import com.github.gfx.android.orma.test.model.Book_Schema;
 import com.github.gfx.android.orma.test.model.Book_Selector;
@@ -30,14 +30,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.support.annotation.NonNull;
-import android.support.test.runner.AndroidJUnit4;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import io.reactivex.ObservableSource;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Function;
@@ -162,9 +161,9 @@ public class RxJava2Test {
     @Test
     public void inserterSingle2() throws Exception {
         db.prepareInsertIntoBookAsSingle()
-                .flatMap(new Function<Inserter<Book>, SingleSource<Long>>() {
+                .flatMap(new Function<RxInserter<Book>, SingleSource<Long>>() {
                     @Override
-                    public SingleSource<Long> apply(Inserter<Book> bookInserter) throws Exception {
+                    public SingleSource<Long> apply(RxInserter<Book> bookInserter) throws Exception {
                         return bookInserter.executeAsSingle(new Callable<Book>() {
                             @NonNull
                             @Override
@@ -193,9 +192,9 @@ public class RxJava2Test {
     @Test
     public void inserterInsertAllAsSingle2() throws Exception {
         db.prepareInsertIntoBookAsSingle()
-                .flatMapObservable(new Function<Inserter<Book>, ObservableSource<Long>>() {
+                .flatMapObservable(new Function<RxInserter<Book>, ObservableSource<Long>>() {
                     @Override
-                    public ObservableSource<Long> apply(Inserter<Book> bookInserter) throws Exception {
+                    public ObservableSource<Long> apply(RxInserter<Book> bookInserter) throws Exception {
                         Book book = new Book();
                         book.title = "single days";
                         book.content = "reactive";

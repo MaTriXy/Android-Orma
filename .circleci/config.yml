@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: circleci/android:api-28-alpha
+    environment:
+      TERM: dumb
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx1024m -Dorg.gradle.daemon=false"
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum "annotations/build.gradle" }}-{{ checksum "processor/build.gradle" }}-{{ checksum "migration/build.gradle" }}-{{ checksum "library/build.gradle" }}-{{ checksum "example/build.gradle" }}-{{ checksum "encryption/build.gradle" }}-{{ checksum "core/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum "annotations/build.gradle" }}-{{ checksum "processor/build.gradle" }}-{{ checksum "migration/build.gradle" }}-{{ checksum "library/build.gradle" }}-{{ checksum "example/build.gradle" }}-{{ checksum "encryption/build.gradle" }}-{{ checksum "core/build.gradle" }}
+      - run:
+          name: Run Tests 1
+          command: ./gradlew lint example:assembleDebug
+      - run:
+          name: Run Tests 2
+          command: ./gradlew processor:test
+      - run:
+          name: Run Tests 3
+          command: ./gradlew migration:testDebugUnitTest
+      - run:
+          name: Run Tests 4
+          command: ./gradlew library:testDebugUnitTest
+      - store_test_results:
+          paths:
+              - processor/build/test-results
+              - library/build/test-results
+              - migration/build/test-results

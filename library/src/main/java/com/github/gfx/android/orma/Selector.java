@@ -18,27 +18,22 @@ package com.github.gfx.android.orma;
 
 import com.github.gfx.android.orma.exception.InvalidStatementException;
 import com.github.gfx.android.orma.exception.NoValueException;
+import com.github.gfx.android.orma.function.Function1;
 import com.github.gfx.android.orma.internal.OrmaConditionBase;
 import com.github.gfx.android.orma.internal.OrmaIterator;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.support.annotation.CheckResult;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RestrictTo;
+import androidx.annotation.CheckResult;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
-
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Single;
 
 @SuppressLint("Assert")
 public abstract class Selector<Model, S extends Selector<Model, ?>>
@@ -69,7 +64,6 @@ public abstract class Selector<Model, S extends Selector<Model, ?>>
         super(relation);
         orderBy = relation.buildOrderingTerms();
     }
-
 
     public Selector(@NonNull Selector<Model, ?> selector) {
         super(selector);
@@ -119,7 +113,7 @@ public abstract class Selector<Model, S extends Selector<Model, ?>>
     }
 
     @SuppressWarnings("unchecked")
-    public S limit(@IntRange(from = 1, to = Integer.MAX_VALUE) long limit) {
+    public S limit(@IntRange(from = 1) long limit) {
         this.limit = limit;
         return (S) this;
     }
@@ -137,7 +131,7 @@ public abstract class Selector<Model, S extends Selector<Model, ?>>
     }
 
     @SuppressWarnings("unchecked")
-    public S per(@IntRange(from = 1, to = Integer.MAX_VALUE) long per) {
+    public S per(@IntRange(from = 1) long per) {
         this.limit = per;
         return (S) this;
     }
@@ -208,17 +202,6 @@ public abstract class Selector<Model, S extends Selector<Model, ?>>
         return (int) conn.rawQueryForLong(sql, getBindArgs());
     }
 
-    @CheckResult
-    @NonNull
-    public Single<Integer> countAsSingle() {
-        return Single.fromCallable(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return count();
-            }
-        });
-    }
-
     public boolean isEmpty() {
         return count() == 0;
     }
@@ -269,21 +252,18 @@ public abstract class Selector<Model, S extends Selector<Model, ?>>
     }
 
     @NonNull
-    public <T> Observable<T> pluckAsObservable(final ColumnDef<Model, T> column) {
-        return Observable.create(new ObservableOnSubscribe<T>() {
-            @Override
-            public void subscribe(ObservableEmitter<T> emitter) throws Exception {
-                Cursor cursor = executeWithColumns(column.getQualifiedName());
-                try {
-                    for (int pos = 0; !emitter.isDisposed() && cursor.moveToPosition(pos); pos++) {
-                        emitter.onNext(column.getFromCursor(conn, cursor, 0));
-                    }
-                } finally {
-                    cursor.close();
-                }
-                emitter.onComplete();
+    public <T> List<T> getRawValuesAndMap(@NonNull Function1<Cursor, T> mapper) {
+        List<T> result;
+        Cursor cursor = execute();
+        try {
+            result = new ArrayList<>(cursor.getCount());
+            for (int pos = 0; cursor.moveToPosition(pos); pos++) {
+                result.add(mapper.apply((cursor)));
             }
-        });
+        } finally {
+            cursor.close();
+        }
+        return result;
     }
 
     @CheckResult
@@ -324,40 +304,17 @@ public abstract class Selector<Model, S extends Selector<Model, ?>>
      */
     @NonNull
     public List<Model> toList() {
-        Cursor cursor = execute();
-
-        ArrayList<Model> list = new ArrayList<>(cursor.getCount());
-        try {
-            for (int pos = 0; cursor.moveToPosition(pos); pos++) {
-                list.add(newModelFromCursor(cursor));
+        return getRawValuesAndMap(new Function1<Cursor, Model>() {
+            @Override
+            public Model apply(Cursor cursor) {
+                return newModelFromCursor(cursor);
             }
-        } finally {
-            cursor.close();
-        }
-        return list;
+        });
     }
 
     @NonNull
     public Model newModelFromCursor(@NonNull Cursor cursor) {
         return getSchema().newModelFromCursor(conn, cursor, 0);
-    }
-
-    @NonNull
-    public Observable<Model> executeAsObservable() {
-        return Observable.create(new ObservableOnSubscribe<Model>() {
-            @Override
-            public void subscribe(ObservableEmitter<Model> emitter) throws Exception {
-                final Cursor cursor = execute();
-                try {
-                    for (int pos = 0; !emitter.isDisposed() && cursor.moveToPosition(pos); pos++) {
-                        emitter.onNext(newModelFromCursor(cursor));
-                    }
-                } finally {
-                    cursor.close();
-                }
-                emitter.onComplete();
-            }
-        });
     }
 
     // implements Iterable<Model>

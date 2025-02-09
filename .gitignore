@@ -1,9 +1,9 @@
 .gradle/
 local.properties
-gradle.properties
 .idea/*.xml
 .idea/.*
 .idea/*/*.xml
+.idea/caches/*
 !.idea/copyright/*.xml
 !.idea/dictionaries/orma.xml
 !.idea/codeStyleSettings.xml
@@ -17,11 +17,11 @@ example/build/*
 captures/
 .gradletasknamecache
 
+# jacoco
+*.exec
+
 # gh-pages
 _site/
-
-# gradlew's bug?
-true
 
 # What orma generates for example
 !example/build/generated

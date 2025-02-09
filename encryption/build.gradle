@@ -1,15 +1,15 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    compileSdkVersion SDK_VERSION
+    buildToolsVersion BUILD_TOOLS_VERSION
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 26
+        minSdkVersion MIN_SDK_VERSION
+        targetSdkVersion SDK_VERSION
         versionCode rootProject.ext.versionCode
         versionName rootProject.ext.versionName
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         consumerProguardFiles 'proguard-rules.pro'
     }
@@ -24,8 +24,8 @@ android {
     productFlavors {
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     lintOptions {
         textReport true
@@ -38,20 +38,14 @@ android {
 }
 
 dependencies {
-    compile project(':core')
+    api project(':core')
+
+    api "androidx.annotation:annotation:${ANDROIDX_ANNOTATION_VERSION}"
 
     // https://github.com/sqlcipher/android-database-sqlcipher
-    compile 'net.zetetic:android-database-sqlcipher:3.5.7'
+    implementation 'net.zetetic:android-database-sqlcipher:4.3.0'
 }
 
-publish {
-    artifactId = 'orma-encryption'
-    desc = 'Encryption support for Android-Orma'
-
-    def metadata = rootProject.ext.metadata
-    groupId = metadata.groupId
-    publishVersion = metadata.version
-    website = metadata.website
-    repository = metadata.repository
-    licences = metadata.licences
-}
+archivesBaseName = 'orma-encryption'
+metadata.desc = 'Encryption support for Android-Orma'
+apply from: "${project.rootDir}/publish.gradle"

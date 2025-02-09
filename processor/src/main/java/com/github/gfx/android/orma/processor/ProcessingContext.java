@@ -25,8 +25,6 @@ import com.github.gfx.android.orma.processor.util.SqlTypes;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
-import android.support.annotation.Nullable;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
@@ -46,6 +44,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleTypeVisitor8;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+
+import androidx.annotation.Nullable;
 
 public class ProcessingContext {
 
@@ -209,12 +209,42 @@ public class ProcessingContext {
     public void setupDefaultDatabaseIfNeeded() {
         if (databases.isEmpty()) {
             SchemaDefinition schema = getFirstSchema();
-            databases.add(new DatabaseDefinition(this, schema.getPackageName(), Database.DEFAULT_DATABASE_CLASS_NAME));
+            databases.add(new DatabaseDefinition(this,
+                    schema.getPackageName(),
+                    Database.DEFAULT_DATABASE_CLASS_NAME,
+                    Database.DEFAULT_RX_JAVA_SUPPORT));
         }
     }
 
     public SchemaDefinition getFirstSchema() {
         return schemaMap.values().iterator().next();
+    }
+
+    public boolean isRxJavaSupport(SchemaDefinition schema) {
+        if (databases.isEmpty()) {
+            return Database.DEFAULT_RX_JAVA_SUPPORT;
+        }
+
+        long targetCount = databases
+                .stream()
+                .filter((database) -> database.getSchemas().contains(schema))
+                .count();
+
+        long rxJavaSupportCount = databases
+                .stream()
+                .filter((database) -> database.getSchemas().contains(schema) && database.isRxJavaSupport())
+                .count();
+
+        if (rxJavaSupportCount == 0L) {
+            return false;
+        }
+
+        if (rxJavaSupportCount < targetCount) {
+            addError(schema.getModelClassName().simpleName() + " is included in different RxJavaSupport databases.",
+                    schema.getElement());
+        }
+
+        return true;
     }
 
     public void note(String message) {

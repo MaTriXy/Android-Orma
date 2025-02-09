@@ -1,4 +1,4 @@
-# Android Orma [![Circle CI](https://circleci.com/gh/gfx/Android-Orma/tree/master.svg?style=svg)](https://circleci.com/gh/gfx/Android-Orma/tree/master) [ ![Download](https://api.bintray.com/packages/gfx/maven/orma/images/download.svg) ](https://bintray.com/gfx/maven/orma/) [![Gitter](http://badges.gitter.im/Android-Orma.svg)](https://gitter.im/Android-Orma/Lobby)
+# Android Orma [![Circle CI](https://circleci.com/gh/maskarade/Android-Orma/tree/master.svg?style=svg)](https://circleci.com/gh/maskarade/Android-Orma/tree/master) [ ![Download](https://api.bintray.com/packages/orma/maven/orma/images/download.svg) ](https://bintray.com/orma/maven/orma/) [![Gitter](http://badges.gitter.im/Android-Orma.svg)](https://gitter.im/Android-Orma/Lobby) ![backers](https://opencollective.com/android-orma/tiers/backer/badge.svg?label=backer&color=brightgreen)
 
 <p align="center">
 <img src="Orma.png" width="256" height="256"  alt="Android Orma" />
@@ -23,41 +23,41 @@ as the author respects the Larry Wall's wisdom:
 - [Getting Started](#getting-started)
 - [Synopsis](#synopsis)
 - [The Components](#the-components)
-    - [Database Handles](#database-handles)
-    - [Models](#models)
-    - [Schema Helpers](#schema-helpers)
-    - [Relation Helpers](#relation-helpers)
-    - [Selector Helpers](#selector-helpers)
-    - [Updater Helpers](#updater-helpers)
-    - [Deleter Helpers](#deleter-helpers)
-    - [Query Helper Methods](#query-helper-methods)
-        - [List of Query Helper Methods](#list-of-query-helper-methods)
-        - [How to Control Generation of Query Helpers](#how-to-control-generation-of-query-helpers)
-    - [The Inserter Helpers](#the-inserter-helpers)
+  - [Database Handles](#database-handles)
+  - [Models](#models)
+  - [Schema Helpers](#schema-helpers)
+  - [Relation Helpers](#relation-helpers)
+  - [Selector Helpers](#selector-helpers)
+  - [Updater Helpers](#updater-helpers)
+  - [Deleter Helpers](#deleter-helpers)
+  - [Query Helper Methods](#query-helper-methods)
+    - [List of Query Helper Methods](#list-of-query-helper-methods)
+    - [How to Control Generation of Query Helpers](#how-to-control-generation-of-query-helpers)
+  - [The Inserter Helpers](#the-inserter-helpers)
 - [Details of Database Handles](#details-of-database-handles)
-    - [Configuration of Database Handles](#configuration-of-database-handles)
-    - [Database Handle Builders](#database-handle-builders)
-    - [In-Memory Database](#in-memory-database)
+  - [Configuration of Database Handles](#configuration-of-database-handles)
+  - [Database Handle Builders](#database-handle-builders)
+  - [In-Memory Database](#in-memory-database)
 - [Details of Models](#details-of-models)
-    - [Setters and Getters](#setters-and-getters)
-    - [Immutable Models](#immutable-models)
-    - [Composite Indexes](#composite-indexes)
-    - [Reserved Names](#reserved-names)
+  - [Setters and Getters](#setters-and-getters)
+  - [Immutable Models](#immutable-models)
+  - [Composite Indexes](#composite-indexes)
+  - [Reserved Names](#reserved-names)
 - [RxJava Integration](#rxjava-integration)
 - [Associations](#associations)
-    - [Has-One Associations with `SingleAssociation<T>`](#has-one-associations-with-singleassociationt)
-    - [Direct Associations](#direct-associations)
-    - [Has-Many Associations with `SingleAssociation<T>`](#has-many-associations-with-singleassociationt)
-    - [Has-Many Associations with Direct Associations](#has-many-associations-with-direct-associations)
-    - [Limitations in Associations](#limitations-in-associations)
+  - [Has-One Associations with `SingleAssociation<T>`](#has-one-associations-with-singleassociationt)
+  - [Direct Associations](#direct-associations)
+  - [Has-Many Associations with `SingleAssociation<T>`](#has-many-associations-with-singleassociationt)
+  - [Has-Many Associations with Direct Associations](#has-many-associations-with-direct-associations)
+  - [Limitations in Associations](#limitations-in-associations)
 - [Type Adapters](#type-adapters)
-    - [How Serialized Types Used](#how-serialized-types-used)
-    - [`@StaticTypeAdapters` for Multiple Serializers at Once](#statictypeadapters-for-multiple-serializers-at-once)
-    - [Built-In Type Adapters](#built-in-type-adapters)
-    - [Generic Type Adapters](#generic-type-adapters)
+  - [How Serialized Types Used](#how-serialized-types-used)
+  - [`@StaticTypeAdapters` for Multiple Serializers at Once](#statictypeadapters-for-multiple-serializers-at-once)
+  - [Built-In Type Adapters](#built-in-type-adapters)
+  - [Generic Type Adapters](#generic-type-adapters)
 - [Pagination](#pagination)
-    - [limit and offset](#limit-and-offset)
-    - [page and per](#page-and-per)
+  - [limit and offset](#limit-and-offset)
+  - [page and per](#page-and-per)
 - [Raw Queries](#raw-queries)
 - [Migration](#migration)
 - [DataSet Changed Events](#dataset-changed-events)
@@ -65,19 +65,19 @@ as the author respects the Larry Wall's wisdom:
 - [Encryption](#encryption)
 - [Example](#example)
 - [Benchmark](#benchmark)
-- [Method Count](#method-count)
 - [FAQ](#faq)
-    - [Can't build my project.](#cant-build-my-project)
-    - [How can I enable debug logging on release build?](#how-can-i-enable-debug-logging-on-release-build)
-    - [How can see the generated Java files?](#how-can-see-the-generated-java-files)
-    - [Does Orma work with Kotlin?](#does-orma-work-with-kotlin)
-    - [Does Orma work with the Jack compiler?](#does-orma-work-with-the-jack-compiler)
-    - [When the database handle is opened and closed?](#when-the-database-handle-is-opened-and-closed)
-    - [Who uses Orma?](#who-uses-orma)
+  - [How can I enable debug logging on release build?](#how-can-i-enable-debug-logging-on-release-build)
+  - [How can see the generated Java files?](#how-can-see-the-generated-java-files)
+  - [Does Orma work with Kotlin?](#does-orma-work-with-kotlin)
+  - [When the database handle is opened and closed?](#when-the-database-handle-is-opened-and-closed)
+  - [Who uses Orma?](#who-uses-orma)
 - [Support](#support)
 - [Licenses in Runtime Dependencies](#licenses-in-runtime-dependencies)
 - [Contribution](#contribution)
 - [Release Engineering for Maintainers](#release-engineering-for-maintainers)
+  - [Artifact Repository](#artifact-repository)
+  - [What you do](#what-you-do)
+  - [Documentation Tools](#documentation-tools)
 - [See Also](#see-also)
 - [Authors and Contributors](#authors-and-contributors)
 - [License](#license)
@@ -122,8 +122,8 @@ Declare dependencies to use Orma and its annotation processor.
 
 ```gradle:build.gradle
 dependencies {
-    annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.2.5'
-    compile 'com.github.gfx.android.orma:orma:4.2.5'
+    annotationProcessor 'com.github.maskarade.android.orma:orma-processor:6.0.2'
+    compile 'com.github.maskarade.android.orma:orma:6.0.2'
 }
 ```
 
@@ -331,7 +331,7 @@ This is a query builder for `DELETE FROM *` statements.
 There are **Query Helpers** which are generated to query conditions and orders in a type-safe way.
 
 For example, `titleEq()` shown in the synopsis section, are generated to help make `WHERE` and `ORDER BY` clauses,
-for `Relation`, `Selecotr`, `Deleter`, and `Updater`.
+for `Relation`, `Selector`, `Deleter`, and `Updater`.
 
 Most of them are generated for columns with `indexed = true`, and some are for `@PrimaryKey` columns.
 
@@ -384,7 +384,7 @@ And `ORDER BY` helpers:
 
 **This is an advanced setting for those who know what they do.**
 
-You can control which Query Helpers are generater for a column by `@Column(helpers = ...)` attribute:
+You can control which Query Helpers are generated for a column by `@Column(helpers = ...)` attribute:
 
 ```java
 @Column(
@@ -490,7 +490,7 @@ OrmaDatabase orma = OrmaDatabase.builder(context)
 
 You can create in-memory databases by passing `null` to `OrmaDatabase.Builder#name()`.
 
-This is useful for testhing.
+This is useful for testing.
 
 ## Details of Models
 
@@ -1017,16 +1017,24 @@ Note that `page` starts from 1.
 For low-level operations, e.g. executing a raw query, you can use
 `OrmaDatabase#getConnection()`, which returns `OrmaConnection`.
 
-For example:
+For example of `#rawQuery`:
 
 ```java
 Cursor cursor = db.getConnection().rawQuery("SELECT max(bookId) as max_id, min(bookId) as min_id FROM Book");
 cursor.moveToFirst();
-// get data from cursor
+// ...get data from cursor...
 cursor.close();
 ```
 
-NOTE: Don't use `rawQuery()` for performance because Orma query builders are fast enough.
+Or, you can use `#execSQL` for mutations:
+
+```java
+OrmaConnection conn = db.getConnection();
+conn.execSQL("VACUUM");
+conn.execSQL("ANALYZE");
+```
+
+NOTE: Don't use `#rawQuery()` for performance because Orma query builders are fast enough.
 
 ## Migration
 
@@ -1037,16 +1045,16 @@ schema changes by making diff with old and new DDL stored in `sqlite_master`.
 That is, you don't need migration steps for the following cases:
 
 * Adding tables
-* Adding columns
+* Adding columns (In this case, you need to add `defaultExpr` or `@Nullable` to new columns for auto-migration to work)
 * Changing column types
 * Changing column constraints (`NOT NULL`, `UNIQUE`, and etc.)
 
-Of course, you can define migration steps for each schema version (or `BuildConfig.VERSION`).
+You can also define migration steps for each schema version, which uses applications version code (i.e. `BuildConfig.VERSION`) as schema versions.
 
 Here is an example to define migration steps:
 
 ```java
-int VERSION_2; // a past version of VERSION_CODE
+int VERSION_2; // a past version of application's VERSION_CODE
 
 OrmaDatabase orma = OrmaDatabase.builder(this)
         .migrationStep(VERSION_2, new ManualStepMigration.ChangeStep() {
@@ -1117,7 +1125,7 @@ There's an encryption extension as `orma-encryption` since Orma v5.0.0-rc1:
 
 ```build.gradle
 dependencies {
-    compile 'com.github.gfx.android.orma:orma-encryption:5.0.0-rc1'
+    compile 'com.github.maskarade.android.orma:orma-encryption:6.0.2'
 }
 ```
 
@@ -1131,7 +1139,7 @@ OrmaDatabase orma = OrmaDatabase.builder(context)
     .build();
 ```
 
-Encrypted database are managed by [SQLCipher](https://github.com/sqlcipher/android-database-sqlcipher), so the database files are not compatible with non-encrypted ones.
+Encrypted databases are managed by [SQLCipher](https://github.com/sqlcipher/android-database-sqlcipher), so the database files are not compatible with non-encrypted ones.
 
 Note that with this extension the database handle throws `net.sqlcipher.database.SQLException` instead of `android.database.SQLException` as runtime exceptions, so it might not be 100% compatible with the default database.
 
@@ -1149,28 +1157,14 @@ There is a simple benchmark with [Realm](https://github.com/realm/realm-java) an
 
 [example/BenchmarkFragment](example/src/main/java/com/github/gfx/android/orma/example/fragment/BenchmarkFragment.java)
 
-Here is a result performed on Android 6.0.0 / Xperia Z4
+Here is a result performed on Android 6.0.2 / Xperia Z4
 as of Orma v4.2.5 and Realm 2.3.0, processing 10 items x 100 times:
 
 <img src="benchmark.png" alt="" width="420"/>
 
 I welcome benchmark in another condition and/or another code.
 
-## Method Count
-
-Orma runtime is very lightweight: [Method Count for v4.2.5](http://www.methodscount.com/?lib=com.github.gfx.android.orma:orma:4.2.5)
-
 ## FAQ
-
-### Can't build my project.
-
-Check your toolchain. FYI here are my toolchain versions:
-
-* JDK 1.8.0_66
-* Android SDK Tools 25 or later
-* Android SDK Platform Tools 24 or later
-* Android SDK Build Tools 24 or later
-* Android Gradle Plugin 2.2.0 or later
 
 ### How can I enable debug logging on release build?
 
@@ -1196,7 +1190,7 @@ SchemaDiffMigration migration = new SchemaDiffMigration(context, trace);
 
 As other annotation processors do, Orma save files to `$modle/build/generated/source/apt/`.
 
-You can see [generated files for example models](example/build/generated/source/apt/debug/com/github/gfx/android/orma/example/orma).
+You can see [generated files for example models](example/build/generated/source/apt/normal/debug/com/github/gfx/android/orma/example/orma).
 
 ### Does Orma work with Kotlin?
 
@@ -1205,19 +1199,6 @@ Yes, but it's _experimental_. Here is an example to use Orma with Kotlin:
 https://github.com/gfx/OrmaWithKotlin
 
 NOTE: Kotlin APT support, a.k.a. _kapt_, is **really unstable**. Don't ask me how to solve kapt problems.
-
-### Does Orma work with the Jack compiler?
-
-Yes. As of Android Gradle Plugin 2.2.2, Orma should work with Jack.
-
-```gradle:build.gradle
-dependencies {
-    annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.2.5'
-    compile 'com.github.gfx.android.orma:orma:4.2.5'
-}
-```
-
-See https://github.com/gfx/OrmaWithJack for a working example.
 
 ### When the database handle is opened and closed?
 
@@ -1263,11 +1244,24 @@ Patches are welcome!
 
 ## Release Engineering for Maintainers
 
+### Artifact Repository
+
+https://bintray.com/orma
+
+### What you do
+
 ```shell
 ./gradlew bumpMajor # or bumpMinor / bumpPatch
+code CHANGES.md # edit change logs
 git add -va
-make publish # run tests, build artifacts, publish to jcenter, and make a tag
+make publish # run tests, build artifacts, publish to jcenter, and make a git tag to HEAD
 ```
+
+Note that you have to edit `VERSION` file by hand if you'd like to release release candidates.
+
+See `Makefile` for details.
+
+### Documentation Tools
 
 Visual Studio Code (a.k.a. vscode) is recommended to edit README.md and CHANGELOG.md. Especially the ToC section is managed by [AlanWalk/Markdown-TOC](https://github.com/AlanWalk/Markdown-TOC).
 
@@ -1282,6 +1276,8 @@ Visual Studio Code (a.k.a. vscode) is recommended to edit README.md and CHANGELO
 FUJI Goro ([gfx](https://github.com/gfx)).
 
 And contributors are listed here: [Contributors](https://github.com/gfx/Android-Orma/graphs/contributors)
+
+If you are interested in sponsoring this project, it is really welcome, as I'll spend more time to develop this software: https://opencollective.com/android-orma
 
 ## License
 

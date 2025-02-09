@@ -29,6 +29,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
@@ -44,10 +45,13 @@ public class RelationWriter extends BaseWriter {
 
     private final ConditionQueryHelpers queryHelpers;
 
+    private final boolean isRxJavaSupport;
+
     public RelationWriter(ProcessingContext context, SchemaDefinition schema) {
         super(context);
         this.schema = schema;
         this.queryHelpers = new ConditionQueryHelpers(context, schema, getTargetClassName());
+        this.isRxJavaSupport = context.isRxJavaSupport(schema);
     }
 
     ClassName getTargetClassName() {
@@ -71,7 +75,11 @@ public class RelationWriter extends BaseWriter {
             classBuilder.addAnnotation(Annotations.suppressWarnings("rawtypes"));
         }
         classBuilder.addModifiers(Modifier.PUBLIC);
-        classBuilder.superclass(Types.getRelation(schema.getModelClassName(), getTargetClassName()));
+
+        ParameterizedTypeName relationType = isRxJavaSupport
+                ? Types.getRxRelation(schema.getModelClassName(), getTargetClassName())
+                : Types.getRelation(schema.getModelClassName(), getTargetClassName());
+        classBuilder.superclass(relationType);
 
         classBuilder.addField(FieldSpec.builder(schema.getSchemaClassName(), "schema", Modifier.FINAL).build());
 

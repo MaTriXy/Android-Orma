@@ -10,9 +10,85 @@ The versioning follows [Semantic Versioning](http://semver.org/):
 
 Note that _experimental_ features, annotated with `@Experimental` may change without notice.
 
-## v5.0.0 (not yet scheduled)
+## v6.0.2 2018/10/29
 
-https://github.com/gfx/Android-Orma/compare/v4.2.5...HEAD
+https://github.com/maskarade/Android-Orma/compare/v6.0.1...v6.0.2
+
+* [#436](https://github.com/maskarade/Android-Orma/issues/436): ManualStepMigration not working at the first time of defining steps (the issue reported and the path reviewd by @k-kagurasaka)
+* [test] migration to Robolectric 4.0
+
+## v6.0.1 2018/10/19
+
+https://github.com/maskarade/Android-Orma/compare/v6.0.0...v6.0.1
+
+* No code changes
+* Resolve release operation mistake
+
+## v6.0.0 2018/10/19
+
+https://github.com/maskarade/Android-Orma/compare/v5.1.2...v6.0.0
+
+Orma v6 supports AndroidX instead of Android Support Library.
+If your project depends on Android Support Library, you should keep to use Orma v5.x.
+
+## v5.1.2 2018/10/18
+
+https://github.com/maskarade/Android-Orma/compare/v5.1.1...v5.1.2
+
+* No code changes
+* Build as Java 8
+* [#461](https://github.com/maskarade/Android-Orma/pull/461): re-write release engineering tasks (thanks to @chibatching)
+
+## v5.1.1 2018/10/10
+
+https://github.com/maskarade/Android-Orma/compare/v5.1.0...v5.1.1
+
+* No code changes
+* Upgraded dependencies
+* Built with the latest toolchain
+
+
+## v5.1.0 2018/10/09
+
+https://github.com/maskarade/Android-Orma/compare/v5.0.2...v5.1.0
+
+* Depends on Android Support Library v27.1.1 (from v27.0.2)
+* [#416](https://github.com/maskarade/Android-Orma/issues/416): `Relation#convertToContentValues()`
+
+## v5.0.2 2018/09/03
+
+* No code change from v5.0.0
+* Fix pom metadata for bintray.com
+
+## v5.0.1 2018/09/03
+
+* No code change from v5.0.0
+* Changed the `groupId` from `com.github.gfx.android.orma` to `com.github.maskarade.android.orma`. No package name is changed, though.
+
+## v5.0.0 2018/08/21
+
+https://github.com/maskarade/Android-Orma/compare/v4.2.5...v5.0.0
+
+### New Features
+
+* Encryption via SQLCipher
+* Opt-out RxJava from generated code
+
+## Bug Fixes
+
+There are lots of bug fixes. See the diff.
+
+## v5.0.0-rc6 2018/08/13
+
+https://github.com/gfx/Android-Orma/compare/v5.0.0-rc5...v5.0.0-rc6
+
+* just confirming release engineering
+
+## v5.0.0-rc5 2018/08/13
+
+https://github.com/gfx/Android-Orma/compare/v5.0.0-rc4...v5.0.0-rc5
+
+* RxJava is now optional (by @k-kagurazaka)
 
 ## v5.0.0-rc4 2017/06/14
 

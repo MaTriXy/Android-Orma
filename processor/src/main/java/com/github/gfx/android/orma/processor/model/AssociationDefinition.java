@@ -20,8 +20,8 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class AssociationDefinition {
 
@@ -56,7 +56,7 @@ public class AssociationDefinition {
     }
 
     public boolean isSingleAssociation() {
-        return Types.SingleAssociation.equals(associationType);
+        return Types.SingleAssociation.equals(associationType) || Types.RxSingleAssociation.equals(associationType);
     }
 
     public boolean isDirectAssociation() {

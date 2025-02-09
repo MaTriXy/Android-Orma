@@ -1,16 +1,16 @@
 package com.github.gfx.android.orma.example.orma;
 
-import android.support.annotation.NonNull;
-import com.github.gfx.android.orma.OrmaConnection;
-import com.github.gfx.android.orma.Selector;
+import androidx.annotation.NonNull;
 import com.github.gfx.android.orma.function.Function1;
+import com.github.gfx.android.orma.rx.RxOrmaConnection;
+import com.github.gfx.android.orma.rx.RxSelector;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class Item_Selector extends Selector<Item, Item_Selector> {
+public class Item_Selector extends RxSelector<Item, Item_Selector> {
   final Item_Schema schema;
 
-  public Item_Selector(OrmaConnection conn, Item_Schema schema) {
+  public Item_Selector(RxOrmaConnection conn, Item_Schema schema) {
     super(conn);
     this.schema = schema;
   }
@@ -44,7 +44,8 @@ public class Item_Selector extends Selector<Item, Item_Selector> {
     return where(schema.category, "=", categoryId);
   }
 
-  public Item_Selector category(@NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
+  public Item_Selector category(
+      @NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
     return block.apply(new Category_AssociationCondition(getConnection(), schema.category.associationSchema)).appendTo(this);
   }
 

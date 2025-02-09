@@ -19,15 +19,16 @@ package com.github.gfx.android.orma.widget;
 import com.github.gfx.android.orma.Relation;
 import com.github.gfx.android.orma.Selector;
 import com.github.gfx.android.orma.annotation.Experimental;
+import com.github.gfx.android.orma.rx.RxRelation;
 
 import android.content.Context;
-import android.support.annotation.CheckResult;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 
 import java.util.concurrent.Callable;
 
+import androidx.annotation.CheckResult;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -46,7 +47,7 @@ public abstract class OrmaRecyclerViewAdapter<Model, VH extends RecyclerView.Vie
 
     protected final OrmaAdapter<Model> delegate;
 
-    public OrmaRecyclerViewAdapter(@NonNull Context context, @NonNull Relation<Model, ?> relation) {
+    public OrmaRecyclerViewAdapter(@NonNull Context context, @NonNull RxRelation<Model, ?> relation) {
         this(new OrmaAdapter<>(context, relation));
     }
 

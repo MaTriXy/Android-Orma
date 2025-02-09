@@ -16,7 +16,6 @@
 
 package com.github.gfx.android.orma.test;
 
-import com.github.gfx.android.orma.ColumnDef;
 import com.github.gfx.android.orma.Inserter;
 import com.github.gfx.android.orma.ModelFactory;
 import com.github.gfx.android.orma.function.Function1;
@@ -41,8 +40,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.support.annotation.NonNull;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -493,7 +492,7 @@ public class DirectAssociationsTest {
 
     @Test
     public void testFindByMoreNestedAssociatedModelCondition() throws Exception {
-        ModelWithMoreNestedDirectAssociations model =  orma.createModelWithMoreNestedDirectAssociations(
+        ModelWithMoreNestedDirectAssociations model = orma.createModelWithMoreNestedDirectAssociations(
                 new ModelFactory<ModelWithMoreNestedDirectAssociations>() {
                     @NonNull
                     @Override
@@ -530,13 +529,18 @@ public class DirectAssociationsTest {
         ModelWithMoreNestedDirectAssociations_Selector selector = orma.selectFromModelWithMoreNestedDirectAssociations()
                 .mnd(new Function1<ModelWithNestedDirectAssociations_AssociationCondition, ModelWithNestedDirectAssociations_AssociationCondition>() {
                     @Override
-                    public ModelWithNestedDirectAssociations_AssociationCondition apply(ModelWithNestedDirectAssociations_AssociationCondition cond) {
-                        return cond.md(new Function1<ModelWithDirectAssociation_AssociationCondition, ModelWithDirectAssociation_AssociationCondition>() {
+                    public ModelWithNestedDirectAssociations_AssociationCondition apply(
+                            ModelWithNestedDirectAssociations_AssociationCondition cond) {
+                        return cond
+                                .md(new Function1<ModelWithDirectAssociation_AssociationCondition, ModelWithDirectAssociation_AssociationCondition>() {
                                     @Override
-                                    public ModelWithDirectAssociation_AssociationCondition apply(ModelWithDirectAssociation_AssociationCondition cond) {
-                                        return cond.author(new Function1<Author_AssociationCondition, Author_AssociationCondition>() {
+                                    public ModelWithDirectAssociation_AssociationCondition apply(
+                                            ModelWithDirectAssociation_AssociationCondition cond) {
+                                        return cond
+                                                .author(new Function1<Author_AssociationCondition, Author_AssociationCondition>() {
                                                     @Override
-                                                    public Author_AssociationCondition apply(Author_AssociationCondition cond) {
+                                                    public Author_AssociationCondition apply(
+                                                            Author_AssociationCondition cond) {
                                                         return cond.noteEq(author1.note);
                                                     }
                                                 });

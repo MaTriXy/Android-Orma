@@ -1,6 +1,6 @@
 package com.github.gfx.android.orma.example.orma;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.github.gfx.android.orma.AssociationCondition;
 import com.github.gfx.android.orma.OrmaConnection;
 import com.github.gfx.android.orma.function.Function1;
@@ -44,7 +44,8 @@ public class Item2_AssociationCondition extends AssociationCondition<Item2, Item
     return where(schema.category1, "=", category1Id);
   }
 
-  public Item2_AssociationCondition category1(@NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
+  public Item2_AssociationCondition category1(
+      @NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
     return block.apply(new Category_AssociationCondition(getConnection(), schema.category1.associationSchema)).appendTo(this);
   }
 
@@ -64,7 +65,8 @@ public class Item2_AssociationCondition extends AssociationCondition<Item2, Item
     return where(schema.category2, "=", category2Id);
   }
 
-  public Item2_AssociationCondition category2(@NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
+  public Item2_AssociationCondition category2(
+      @NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
     return block.apply(new Category_AssociationCondition(getConnection(), schema.category2.associationSchema)).appendTo(this);
   }
 

@@ -26,12 +26,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -48,7 +49,7 @@ public class ManualStepMigrationTest {
     List<StepContext> seq;
 
     Context getContext() {
-        return InstrumentationRegistry.getTargetContext();
+        return ApplicationProvider.getApplicationContext();
     }
 
     @Before
@@ -150,7 +151,7 @@ public class ManualStepMigrationTest {
     public void upgradeFull() throws Exception {
         migration.upgrade(db, 1, 100);
 
-        assertThat(migration.fetchDbVersion(db), is(16));
+        assertThat(migration.fetchDbVersion(db), is(100));
 
         assertThat(seq.size(), is(4));
 

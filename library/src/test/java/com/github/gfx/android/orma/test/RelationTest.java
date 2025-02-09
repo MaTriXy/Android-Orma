@@ -16,9 +16,10 @@
 
 package com.github.gfx.android.orma.test;
 
+import com.github.gfx.android.orma.BuiltInSerializers;
 import com.github.gfx.android.orma.Inserter;
 import com.github.gfx.android.orma.ModelFactory;
-import com.github.gfx.android.orma.Relation;
+import com.github.gfx.android.orma.rx.RxRelation;
 import com.github.gfx.android.orma.test.model.ModelWithDate;
 import com.github.gfx.android.orma.test.model.ModelWithDate_Relation;
 import com.github.gfx.android.orma.test.model.ModelWithMultipleSortableColumns;
@@ -30,10 +31,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.support.annotation.NonNull;
-import android.support.test.runner.AndroidJUnit4;
+import android.content.ContentValues;
 
+import java.util.Arrays;
 import java.util.Date;
+
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -124,7 +128,7 @@ public class RelationTest {
 
     @Test
     public void indexOfInAsc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameAsc();
         assertThat(rel.indexOf(find("A")), is(0));
         assertThat(rel.indexOf(find("B")), is(1));
         assertThat(rel.indexOf(find("C")), is(2));
@@ -132,7 +136,7 @@ public class RelationTest {
 
     @Test
     public void indexOfInDesc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameDesc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameDesc();
         assertThat(rel.indexOf(find("A")), is(2));
         assertThat(rel.indexOf(find("B")), is(1));
         assertThat(rel.indexOf(find("C")), is(0));
@@ -140,7 +144,7 @@ public class RelationTest {
 
     @Test
     public void indexOfInAscForDate() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByTimeAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByTimeAsc();
         assertThat(rel.indexOf(find("A")), is(0));
         assertThat(rel.indexOf(find("B")), is(1));
         assertThat(rel.indexOf(find("C")), is(2));
@@ -148,7 +152,7 @@ public class RelationTest {
 
     @Test
     public void indexOfInDescForDate() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByTimeDesc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByTimeDesc();
         assertThat(rel.indexOf(find("A")), is(2));
         assertThat(rel.indexOf(find("B")), is(1));
         assertThat(rel.indexOf(find("C")), is(0));
@@ -156,7 +160,7 @@ public class RelationTest {
 
     @Test
     public void getInAsc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameAsc();
         assertThat(rel.get(0).name, is("A"));
         assertThat(rel.get(1).name, is("B"));
         assertThat(rel.get(2).name, is("C"));
@@ -164,7 +168,7 @@ public class RelationTest {
 
     @Test
     public void getInDesc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameDesc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameDesc();
         assertThat(rel.get(2).name, is("A"));
         assertThat(rel.get(1).name, is("B"));
         assertThat(rel.get(0).name, is("C"));
@@ -172,7 +176,7 @@ public class RelationTest {
 
     @Test
     public void truncateAsc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameAsc();
         rel.truncateAsSingle(2)
                 .test()
                 .assertResult(1);
@@ -184,7 +188,7 @@ public class RelationTest {
 
     @Test
     public void truncateAscOverflow() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameAsc();
         rel.truncateAsSingle(10)
                 .test()
                 .assertResult(0);
@@ -197,7 +201,7 @@ public class RelationTest {
 
     @Test
     public void truncateDesc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameDesc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameDesc();
         rel.truncateAsSingle(10)
                 .test()
                 .assertResult(0);
@@ -210,7 +214,7 @@ public class RelationTest {
 
     @Test
     public void deleteAsObservableAsc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameAsc();
 
         rel.deleteAsMaybe(rel.get(2))
                 .test()
@@ -223,7 +227,7 @@ public class RelationTest {
 
     @Test
     public void deleteAsObservableDesc() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameDesc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameDesc();
 
         rel.deleteAsMaybe(rel.get(2))
                 .test()
@@ -291,8 +295,28 @@ public class RelationTest {
     }
 
     @Test
+    public void convertToContentValues() {
+        ModelWithDate model = rel().get(0);
+        ContentValues contentValues = rel().convertToContentValues(model, true);
+
+        assertThat(contentValues.keySet(), containsInAnyOrder("name", "note", "time"));
+        assertThat(contentValues.getAsString("name"), is(model.name));
+        assertThat(contentValues.getAsString("note"), is(model.note));
+        assertThat(contentValues.getAsLong("time"), is(BuiltInSerializers.serializeDate(model.time)));
+    }
+
+    @Test
+    public void convertToArgs() {
+        ModelWithDate model = rel().get(0);
+        Object[] args = rel().convertToArgs(model, true);
+
+        assertThat(Arrays.asList(args),
+                containsInAnyOrder((Object) model.name, model.note, BuiltInSerializers.serializeDate(model.time)));
+    }
+
+    @Test
     public void iterable() throws Exception {
-        Relation<ModelWithDate, ?> rel = rel().orderByNameAsc();
+        RxRelation<ModelWithDate, ?> rel = rel().orderByNameAsc();
 
         int count = 0;
         for (ModelWithDate ModelWithDate : rel) {

@@ -32,13 +32,21 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * An entrypoint of {@link SQLiteParser}
  */
 public class SQLiteParserUtils {
+
+    @SuppressWarnings("serial")
+    public static class ParseException extends RuntimeException {
+
+        public ParseException(String message, Throwable e) {
+            super(message, e);
+        }
+    }
 
     @NonNull
     public static SQLiteParser createParser(@NonNull String sql) {
@@ -50,24 +58,23 @@ public class SQLiteParserUtils {
         return parser;
     }
 
-    public static SQLiteParser.ParseContext parse(@NonNull String sql, @Nullable SQLiteBaseListener collector)
-            throws ParseCancellationException {
+    public static SQLiteParser.ParseContext parse(@NonNull String sql, @Nullable SQLiteBaseListener collector) {
         SQLiteParser parser = createParser(sql);
         if (collector != null) {
             parser.addParseListener(collector);
         }
         try {
             return parser.parse();
-        } catch (StackOverflowError e) {
-            throw new ParseCancellationException("SQL is too complex to parse: " + sql, e);
+        } catch (StackOverflowError | ParseCancellationException e) {
+            throw new ParseException("SQL is too complex to parse: " + sql, e);
         }
     }
 
-    public static SQLiteParser.ParseContext parse(@NonNull String sql) throws ParseCancellationException {
+    public static SQLiteParser.ParseContext parse(@NonNull String sql) {
         return parse(sql, null);
     }
 
-    public static CreateTableStatement parseIntoCreateTableStatement(@NonNull String sql) throws ParseCancellationException {
+    public static CreateTableStatement parseIntoCreateTableStatement(@NonNull String sql) {
         SQLiteCreateTableStatementCollector collector = new SQLiteCreateTableStatementCollector();
         SQLiteParser.ParseContext parseContext = parse(sql, collector);
         appendTokenList(collector.createTableStatement, parseContext);
@@ -81,7 +88,7 @@ public class SQLiteParserUtils {
         return collector.createIndexStatement;
     }
 
-    public static SQLiteComponent parseIntoSQLiteComponent(@NonNull String sql) throws ParseCancellationException {
+    public static SQLiteComponent parseIntoSQLiteComponent(@NonNull String sql) {
         SQLiteParser.ParseContext parseContext = parse(sql);
         SQLiteComponent component = new SQLiteComponent();
         appendTokenList(component, parseContext);

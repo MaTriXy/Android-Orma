@@ -17,6 +17,7 @@ package com.github.gfx.android.orma.test;
 
 import com.github.gfx.android.orma.ModelFactory;
 import com.github.gfx.android.orma.test.model.ModelWithAccessors;
+import com.github.gfx.android.orma.test.model.ModelWithMultipleSetterConstructors;
 import com.github.gfx.android.orma.test.model.ModelWithNamedSetterConstructor;
 import com.github.gfx.android.orma.test.model.ModelWithSetterConstructor;
 import com.github.gfx.android.orma.test.model.ModelWithSetterConstructorAndNullable;
@@ -27,8 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.support.annotation.NonNull;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -123,6 +124,22 @@ public class SetterAndGetterTest {
         assertThat(model.id, is(not(0L)));
         assertThat(model.key, is("key"));
         assertThat(model.value, is(nullValue()));
+    }
+
+    @Test
+    public void testMultipleSetterConstructors() throws Exception {
+        ModelWithMultipleSetterConstructors model = db
+                .createModelWithMultipleSetterConstructors(new ModelFactory<ModelWithMultipleSetterConstructors>() {
+                    @NonNull
+                    @Override
+                    public ModelWithMultipleSetterConstructors call() {
+                        return new ModelWithMultipleSetterConstructors(0, 1, 2);
+                    }
+                });
+
+        assertThat(model.id, is(not(0L)));
+        assertThat(model.foo, is(1));
+        assertThat(model.bar, is(1));
     }
 
 }

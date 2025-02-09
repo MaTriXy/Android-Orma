@@ -1,8 +1,9 @@
 package com.github.gfx.android.orma.example.orma;
 
+import android.content.ContentValues;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.github.gfx.android.orma.ColumnDef;
 import com.github.gfx.android.orma.OrmaConnection;
 import com.github.gfx.android.orma.Schema;
@@ -199,7 +200,23 @@ public class Entry_Schema implements Schema<Entry> {
   }
 
   /**
-   * Convert models to {@code Object[]}. Provided for debugging
+   * Convert a model to {@code ContentValues). You can use the content values for UPDATE and/or INSERT.
+   */
+  @NonNull
+  @Override
+  public ContentValues convertToContentValues(@NonNull OrmaConnection conn, @NonNull Entry model,
+      boolean withoutAutoId) {
+    ContentValues contentValues = new ContentValues();
+    contentValues.put("resourceType", model.resourceType);
+    contentValues.put("resourceId", model.resourceId);
+    if (!withoutAutoId) {
+      contentValues.put("id", model.id);
+    }
+    return contentValues;
+  }
+
+  /**
+   * Convert a model to {@code Object[]}. Provided for debugging.
    */
   @NonNull
   @Override

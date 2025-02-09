@@ -1,20 +1,20 @@
 package com.github.gfx.android.orma.example.orma;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import com.github.gfx.android.orma.OrmaConnection;
-import com.github.gfx.android.orma.Updater;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.github.gfx.android.orma.example.tool.TypeAdapters;
 import com.github.gfx.android.orma.function.Function1;
+import com.github.gfx.android.orma.rx.RxOrmaConnection;
+import com.github.gfx.android.orma.rx.RxUpdater;
 import java.util.Arrays;
 import java.util.Collection;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.ZonedDateTime;
 
-public class Item2_Updater extends Updater<Item2, Item2_Updater> {
+public class Item2_Updater extends RxUpdater<Item2, Item2_Updater> {
   final Item2_Schema schema;
 
-  public Item2_Updater(OrmaConnection conn, Item2_Schema schema) {
+  public Item2_Updater(RxOrmaConnection conn, Item2_Schema schema) {
     super(conn);
     this.schema = schema;
   }
@@ -73,7 +73,8 @@ public class Item2_Updater extends Updater<Item2, Item2_Updater> {
     return where(schema.category1, "=", category1Id);
   }
 
-  public Item2_Updater category1(@NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
+  public Item2_Updater category1(
+      @NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
     return block.apply(new Category_AssociationCondition(getConnection(), schema.category1.associationSchema)).appendTo(this);
   }
 
@@ -93,7 +94,8 @@ public class Item2_Updater extends Updater<Item2, Item2_Updater> {
     return where(schema.category2, "=", category2Id);
   }
 
-  public Item2_Updater category2(@NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
+  public Item2_Updater category2(
+      @NonNull Function1<Category_AssociationCondition, Category_AssociationCondition> block) {
     return block.apply(new Category_AssociationCondition(getConnection(), schema.category2.associationSchema)).appendTo(this);
   }
 
